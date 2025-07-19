@@ -10,9 +10,13 @@ export function useTest() {
     ...q.b("1"),
     enabled: !!a.data,
   });
-  useQuery({
+  const c = useQuery({
     ...q.c("1"),
     enabled: !!b.data,
+  });
+  useQuery({
+    ...q.d("1"),
+    enabled: !!c.data,
   });
 }
 
@@ -35,6 +39,12 @@ const config = {
     (x, res) => ({ data: { ...res.data, ...x } }),
     (x) => ({ data: x })
   ),
+  d: one(
+    getD,
+    (res) => res.data,
+    (x, res) => ({ data: { ...res.data, ...x } }),
+    (x) => ({ data: x })
+  ),
 };
 
 const { q } = reactQueryOrm(config, {
@@ -44,7 +54,10 @@ const { q } = reactQueryOrm(config, {
   b: {
     c: "c",
   },
-  c: {},
+  c: {
+    d: "d",
+  },
+  d: {},
 });
 
 async function getA(id: string) {
@@ -77,6 +90,19 @@ async function getC(id: string) {
     data: {
       id,
       e: "new prop",
+      d: {
+        id: "1",
+      },
+    },
+  };
+}
+
+async function getD(id: string) {
+  await delay(600);
+  return {
+    data: {
+      id,
+      e: "new prop D",
     },
   };
 }

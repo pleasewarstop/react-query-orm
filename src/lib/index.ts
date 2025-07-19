@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { g } from "./g";
 import { listen } from "./listen";
-import { qkArgString } from "./qk";
+import { qkArgString, qkString } from "./qk";
 import { AwaitedReturn, Config, OneOrMany, QObj } from "./t";
 
 export function reactQueryOrm<C extends Config, K extends keyof C = keyof C>(
@@ -10,10 +10,11 @@ export function reactQueryOrm<C extends Config, K extends keyof C = keyof C>(
     [P in K]: OneOrMany<C, K, P>;
   }
 ) {
+  g.config = config;
+  g.orm = orm;
   const q: {
     [P in K]: QObj<C, P>;
   } = {} as any;
-
   for (let key in config) {
     const item = config[key];
     const queryFn = "one" in item ? item.one : item.many;
@@ -21,7 +22,7 @@ export function reactQueryOrm<C extends Config, K extends keyof C = keyof C>(
     q[key] = (param: any) => {
       const qkArgSt = qkArgString(param);
       const qk = [key, qkArgSt];
-      const x = g.cache[key]?.[qkArgSt];
+      const x = g.cache[qkString(qk)];
       return {
         queryKey: qk,
         queryFn: () => queryFn(param),
@@ -29,8 +30,6 @@ export function reactQueryOrm<C extends Config, K extends keyof C = keyof C>(
       };
     };
   }
-  g.config = config;
-  g.orm = orm;
   return { q };
 }
 
@@ -46,7 +45,7 @@ export function one<
   ToRes = (x: Partial<ReturnType<X>>, res: AwaitedReturn<One>) => any,
   ToPlaceholder = (x: Partial<ReturnType<X>>) => any
 >(one: One, x: X, toRes: ToRes, toPlaceholder: ToPlaceholder, id?: Id) {
-  return { one, x, toRes, toPlaceholder, id: id || (defaultId as Id) };
+  return { one, x, toRes, toPlaceholder, id: id || ((x: any) => x.id as Id) };
 }
 
 export function many<
@@ -57,5 +56,3 @@ export function many<
 >(many: Many, list: List, toRes: ToRes, toPlaceholder: ToPlaceholder) {
   return { many, list, toPlaceholder, toRes };
 }
-
-const defaultId = (x: any) => x?.id;
