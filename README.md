@@ -20,26 +20,26 @@ const config = {
   cluster: one(
     // api function that will be passed to useQuery (see src/api.ts for an example)
     getCluster,
-    // function that extracts entity from response
+    // extracts entity from response
     (res) => res.data,
-    // function for creating placeholder from instance
-    (data) => ({ data }),
-    // function that extracts id from instance
+    // injects instance to response
+    (x) => ({ data: x }),
+    // extracts id from instance
     (x) => x.id
   ),
   // many - for hook of clusters receiving
   clusters: many(
-    // api function that will be passed to useQuery
+    // api will be passed to useQuery
     getClusters,
-    // function that extracts entity from response
+    // extracts entity from response
     (res) => res.data,
-    // function that extracts id from instance
+    // injects instance to response
     (list) => ({ data: list })
   ),
   host: one(
     getHost,
     (res) => res.data,
-    (data) => ({ data })
+    (x) => ({ data: x })
     // you can miss id function if id field is "id"
   ),
 };
