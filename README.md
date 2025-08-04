@@ -1,44 +1,44 @@
-библиотека, генерирующая аргументы `useQuery(q.arg(param))` с комфортным типизированным интерфейсом для синхронизации состояния сущностей между несколькими useQuery хуками
+generating `q` arguments for `useQuery(q.arg(param))` usage with convenient typed interface for synchronizing entity state between multiple useQuery hooks
 
 concept
 
-1. Сущность - основная абстракция библиотеки. Это определяемая по id или сочетанию полей единица, присутствующая в разных хуках useQuery
-2. Есть два вида хуков: one для получения единичных сущностей и many для получения списков
-3. Одни сущности могут содержать другие
-4. Новые данные, полученные через хук, обновляют те же данные в других хуках
-5. Частично полученные сущности могут быть использованы как плейсхолдеры в one-хуках для улучшения ux
+1. Entity is the main abstraction of the library. It is unit defined by id or combination of fields, present in different `useQuery` hooks
+2. There are two hooks types: `one` for getting single entities and `many` for getting lists
+3. One entities can contain others
+4. New data received through a hook updates the same data in other hooks
+5. Partially obtained entities can be used as placeholders in `one` hooks to improve ux
 
 guide
 
-1. Создаём config, пользуясь функциями one и many
+1. Define entities in `config` using `one` and `many` functions
 
 ```js
 import { one, many } from "./lib";
 
 const config = {
-  // one - для хука получения сущности cluster
+  // one - for hook of cluster receiving
   cluster: one(
-    // апи-функция, которая будет передаваться в useQuery (пример см в src/api.ts)
+    // api function that will be passed to useQuery (see src/api.ts for an example)
     getCluster,
-    // функция, извлекающая сущность из запроса
+    // function that extracts entity from response
     (res) => res.data,
-    // функция обновления кэша react-query
+    // function for react-query data refresh from another queries
     (x, res) => ({ data: { ...res.data, ...x } }),
-    // функция создания плейсходера из сущности
+    // function for creating placeholder from instance
     (x) => ({ data: x }),
-    // функция, извлекающая id из сущности
+    // function that extracts id from instance
     (x) => x.id
   ),
-  // many - для хука получения списка clusters
+  // many - for hook of clusters receiving
   clusters: many(
-    // апи-функция, которая будет передаваться в useQuery
+    // api function that will be passed to useQuery
     getClusters,
-    // функция, извлекающая сущность из запроса
+    // function that extracts entity from response
     (res) => res.data,
-    // функция обновления кэша react-query
+    // function that extracts id from instance
     (list) => ({ data: list })
   ),
-  // one для сущности host
+  // one for host
   host: one(
     getHost,
     (res) => res.data,
@@ -49,23 +49,24 @@ const config = {
 };
 ```
 
-2. Связываем one-сущности, заданные в config, и определяем, какие сущности содержатся в many-списках. Через reactQueryOrm создаём объект q с argFn: функциями, возвращающими аргумент для useQuery
+2. Bind entities of `one` specified in `config` to another queries. Using reactQueryOrm we create an object q with argFn: functions that return an argument for useQuery
 
 ```js
 import { reactQueryOrm } from "./lib";
 
 export const { q } = reactQueryOrm(config, {
   cluster: {
-    // в поле "host" кластера содержится сущность host
+    // "host" field of cluster contains instance of host
+    // cluster type is taken from structure getCluster
     host: "host",
   },
-  // итерируя список, определяем, к какой сущности относится элемент
-  // и извлекаем его id
-  clusters: (x) => ["cluster", x.id],
+  // iterating the list, we determine which entity the elements belong to
+  // and extract their id
+  clusters: (x) => ["cluster", x.id], // autocompletion is present
 });
 ```
 
-3. Подписываемся на обновления через useReactQueryOrm
+3. Listen updates through the useReactQueryOrm
 
 ```js
 import { useReactQueryOrm } from "./lib";
@@ -76,7 +77,7 @@ export function App() {
 }
 ```
 
-4. Используем результаты argFn в useQuery
+4. Use `q.api(arg)` results in useQuery
 
 ```js
 function Component() {
@@ -88,11 +89,11 @@ function Component() {
 }
 ```
 
-обновления с накапливанием затрагивают 3 уровня вложенности связей
+cumulative updates affect 3 levels of nesting of relationships between entities
 
 todo:
 
-- улучшение тестов
-- удаление сущностей
+- tests upgrade
+- instances removing
 - useInfiniteQuery
 - ?DeepPartial for x

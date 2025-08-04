@@ -12,8 +12,8 @@ const config = {
   cluster: one(
     getCluster,
     (res) => res.data,
-    // деструктуризация для поддержки частичных изменений
-    // (приходит свежая неполная информация)
+    // destructuring to support partial changes
+    // (new incomplete information arrives)
     (x, res) => ({ data: { ...res.data, ...x } }),
     (x) => ({ data: x })
   ),
@@ -47,8 +47,8 @@ const config = {
   ),
 };
 
-// создаём объект orm прямо в аргументах reactQueryOrm
-// для доступа к автодополнению тс
+// create orm object directly in reactQueryOrm arguments
+// to access autocompletion of ts
 export const { q } = reactQueryOrm(config, {
   cluster: {
     host: "host",
