@@ -13,26 +13,22 @@ const config = {
   cluster: one(
     getCluster,
     (res) => res.data,
-    (x, res) => ({ data: { ...res.data, ...x } }),
-    (x) => ({ data: x })
+    (data) => ({ data })
   ),
   host: one(
     getHost,
     (res) => res.data,
-    (x, res) => ({ data: { ...res.data, ...x } }),
-    (x) => ({ data: x })
+    (data) => ({ data })
   ),
   vm: one(
     getVm,
     (res) => res.data,
-    (x, res) => ({ data: { ...res.data, ...x } }),
-    (x) => ({ data: x })
+    (data) => ({ data })
   ),
   inner: one(
     getInner,
     (res) => res.data,
-    (x, res) => ({ data: { ...res.data, ...x } }),
-    (x) => ({ data: x })
+    (data) => ({ data })
   ),
 };
 

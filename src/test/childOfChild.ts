@@ -21,26 +21,22 @@ const config = {
   a: one(
     getA,
     (res) => res.data,
-    (x, res) => ({ data: { ...res.data, ...x } }),
-    (x) => ({ data: x })
+    (data) => ({ data })
   ),
   b: one(
     getB,
     (res) => res.data,
-    (x, res) => ({ data: { ...res.data, ...x } }),
-    (x) => ({ data: x })
+    (data) => ({ data })
   ),
   c: one(
     getC,
     (res) => res.data,
-    (x, res) => ({ data: { ...res.data, ...x } }),
-    (x) => ({ data: x })
+    (data) => ({ data })
   ),
   d: one(
     getD,
     (res) => res.data,
-    (x, res) => ({ data: { ...res.data, ...x } }),
-    (x) => ({ data: x })
+    (data) => ({ data })
   ),
 };
 

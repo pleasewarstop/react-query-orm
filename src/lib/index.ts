@@ -26,7 +26,7 @@ export function reactQueryOrm<C extends Config, K extends keyof C = keyof C>(
       return {
         queryKey: qk,
         queryFn: () => queryFn(param),
-        placeholderData: x && (config[key] as any).toPlaceholder?.(x),
+        placeholderData: x && (config[key] as any).toRes?.(x),
       };
     };
   }
@@ -42,10 +42,9 @@ export function one<
   One extends (a: any) => any,
   X extends (x: AwaitedReturn<One>) => any,
   Id extends (x: ReturnType<X>) => any,
-  ToRes = (x: Partial<ReturnType<X>>, res: AwaitedReturn<One>) => any,
-  ToPlaceholder = (x: Partial<ReturnType<X>>) => any
->(one: One, x: X, toRes: ToRes, toPlaceholder: ToPlaceholder, id?: Id) {
-  return { one, x, toRes, toPlaceholder, id: id || ((x: any) => x.id as Id) };
+  ToRes = (x: Partial<ReturnType<X>>) => any
+>(one: One, x: X, toRes: ToRes, id?: Id) {
+  return { one, x, toRes, id: id || ((x: any) => x.id as Id) };
 }
 
 export function many<

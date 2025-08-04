@@ -66,7 +66,7 @@ type ConfigItem =
   | {
       one: (...args: any[]) => any;
       x: (arg: any) => any;
-      toPlaceholder: (x: any) => any;
+      toRes: (x: any) => any;
     }
   | { many: (...args: any[]) => any };
 

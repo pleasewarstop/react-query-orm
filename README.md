@@ -22,10 +22,8 @@ const config = {
     getCluster,
     // function that extracts entity from response
     (res) => res.data,
-    // function for react-query data refresh from another queries
-    (x, res) => ({ data: { ...res.data, ...x } }),
     // function for creating placeholder from instance
-    (x) => ({ data: x }),
+    (data) => ({ data }),
     // function that extracts id from instance
     (x) => x.id
   ),
@@ -38,13 +36,11 @@ const config = {
     // function that extracts id from instance
     (list) => ({ data: list })
   ),
-  // one for host
   host: one(
     getHost,
     (res) => res.data,
-    (x, res) => ({ data: { ...res.data, ...x } }),
-    (x) => ({ data: x }),
-    (x) => x.id
+    (data) => ({ data })
+    // you can miss id function if id field is "id"
   ),
 };
 ```
