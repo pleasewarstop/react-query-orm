@@ -1,8 +1,11 @@
 import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useTest } from "./test/st";
+import { useReactQueryOrm } from "./lib";
+// you can change st in path on another filename for changing test example
+import { useTest } from "./test/index";
 
 function App() {
+  useReactQueryOrm(queryClient);
   useTest();
   return <></>;
 }

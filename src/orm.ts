@@ -12,13 +12,14 @@ const config = {
   cluster: one(
     getCluster,
     (res) => res.data,
+    // деструктуризация для поддержки частичных изменений
+    // (приходит свежая неполная информация)
     (x, res) => ({ data: { ...res.data, ...x } }),
     (x) => ({ data: x })
   ),
   clusters: many(
     getClusters,
     (res) => res.data,
-    (data) => ({ data }),
     (list) => ({ data: list })
   ),
   host: one(
@@ -30,7 +31,6 @@ const config = {
   localStorages: many(
     getLocalStorages,
     (res) => res.data,
-    (data) => ({ data }),
     (list) => ({ data: list })
   ),
   vm: one(
@@ -47,6 +47,8 @@ const config = {
   ),
 };
 
+// создаём объект orm прямо в аргументах reactQueryOrm
+// для доступа к автодополнению тс
 export const { q } = reactQueryOrm(config, {
   cluster: {
     host: "host",
@@ -76,6 +78,5 @@ export const { q } = reactQueryOrm(config, {
     cluster: "cluster",
     host: "host",
   },
-  inner: {},
   clusters: (x) => ["cluster", x.id],
 });

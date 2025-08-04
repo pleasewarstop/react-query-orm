@@ -68,7 +68,7 @@ type ConfigItem =
       x: (arg: any) => any;
       toPlaceholder: (x: any) => any;
     }
-  | { many: (...args: any[]) => any; toPlaceholder: (x: any) => any };
+  | { many: (...args: any[]) => any };
 
 type OneXResult<T> = T extends { x: (arg: any) => any }
   ? ReturnType<T["x"]>

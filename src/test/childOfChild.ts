@@ -1,21 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
-import { one, reactQueryOrm, useReactQueryOrm } from "../lib";
-import { queryClient } from "..";
+import { one, reactQueryOrm } from "../lib";
 
 export function useTest() {
-  useReactQueryOrm(queryClient);
-
-  const a = useQuery(q.a("1"));
+  const a = useQuery(q.a(1));
   const b = useQuery({
-    ...q.b("1"),
+    ...q.b(1),
     enabled: !!a.data,
   });
   const c = useQuery({
-    ...q.c("1"),
+    ...q.c(1),
     enabled: !!b.data,
   });
   useQuery({
-    ...q.d("1"),
+    ...q.d(1),
     enabled: !!c.data,
   });
 }
@@ -60,44 +57,44 @@ const { q } = reactQueryOrm(config, {
   d: {},
 });
 
-async function getA(id: string) {
+async function getA(id: number) {
   await delay(0);
   return {
     data: {
       id,
       b: {
-        id: "1",
+        id: 1,
       },
     },
   };
 }
 
-async function getB(id: string) {
+async function getB(id: number) {
   await delay(200);
   return {
     data: {
       id,
       c: {
-        id: "1",
+        id: 1,
       },
     },
   };
 }
 
-async function getC(id: string) {
+async function getC(id: number) {
   await delay(400);
   return {
     data: {
       id,
       e: "new prop",
       d: {
-        id: "1",
+        id: 1,
       },
     },
   };
 }
 
-async function getD(id: string) {
+async function getD(id: number) {
   await delay(600);
   return {
     data: {

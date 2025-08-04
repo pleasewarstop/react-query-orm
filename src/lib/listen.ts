@@ -19,6 +19,7 @@ export function listen(queryClient: any) {
       }
     }
   };
+
   return queryClient.getQueryCache().subscribe((event: any) => {
     if (event.type !== "updated" || event.query.state.status !== "success")
       return;

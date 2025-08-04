@@ -1,17 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { queryClient } from "..";
-import { many, one, reactQueryOrm, useReactQueryOrm } from "../lib";
+import { many, one, reactQueryOrm } from "../lib";
 
 export function useTest() {
-  useReactQueryOrm(queryClient);
-
   const asc = useQuery(q.clusters({ sort: "asc" }));
   const desc = useQuery({
     ...q.clusters({ sort: "desc" }),
     enabled: !!asc.data,
   });
   useQuery({
-    ...q.host("1"),
+    ...q.host(1),
     enabled: !!desc.data,
   });
 }
@@ -26,7 +23,6 @@ const config = {
   clusters: many(
     getClusters,
     (res) => res.data,
-    (list) => ({ data: list }),
     (list) => ({ data: list })
   ),
   host: one(
@@ -65,10 +61,10 @@ async function getClustersAsc() {
   return {
     data: (
       await Promise.all([
-        getCluster("1"),
-        getCluster("2"),
-        getCluster("3"),
-        getCluster("4"),
+        getCluster(1),
+        getCluster(2),
+        getCluster(3),
+        getCluster(4),
       ])
     ).map((x) => x.data),
   };
@@ -78,52 +74,52 @@ async function getClustersDesc() {
   await delay(200);
   return {
     data: (
-      await Promise.all([getCluster("3"), getCluster("2"), getCluster("5")])
+      await Promise.all([getCluster(3), getCluster(2), getCluster(5)])
     ).map((x) => x.data),
   };
 }
 
-async function getCluster(id: string) {
+async function getCluster(id: number) {
   await delay(400);
   return {
     data: {
       e: "cluster" + id,
       id,
       vms: [
-        { id: "1", e: "vm" },
-        { id: "2", e: "vm2" },
+        { id: 1, e: "vm" },
+        { id: 2, e: "vm2" },
       ],
       host: {
-        id: "1",
+        id: 1,
         e: "host",
-        vm: { id: "1", e: "vm" },
+        vm: { id: 1, e: "vm" },
         vms: [
-          { id: "1", e: "vm" },
-          { id: "2", e: "vm2" },
+          { id: 1, e: "vm" },
+          { id: 2, e: "vm2" },
         ],
       },
     },
   };
 }
 
-async function getHost(id: string) {
+async function getHost(id: number) {
   await delay(600);
   return {
     data: {
       id,
       e: "host_2",
-      vm: { id: "1", e: "vm_2" },
+      vm: { id: 1, e: "vm_2" },
       vms: [
-        { id: "3", e: "vm3_2" },
-        { id: "2", e: "vm2_2" },
+        { id: 3, e: "vm3_2" },
+        { id: 2, e: "vm2_2" },
       ],
     },
   };
 }
 
-async function getVm(id: string) {
+async function getVm(id: number) {
   await delay(800);
-  return { data: { id: "1", e: "vm" } };
+  return { data: { id: 1, e: "vm" } };
 }
 
 function delay(ms = 200) {

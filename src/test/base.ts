@@ -1,13 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { one, reactQueryOrm, useReactQueryOrm } from "../lib";
-import { queryClient } from "..";
+import { one, reactQueryOrm } from "../lib";
 
 export function useTest() {
-  useReactQueryOrm(queryClient);
-
-  const cluster = useQuery(q.cluster("1"));
+  const cluster = useQuery(q.cluster(1));
   useQuery({
-    ...q.host("1"),
+    ...q.host(1),
     enabled: !!cluster.data,
   });
 }
@@ -63,38 +60,38 @@ const { q } = reactQueryOrm(config, {
   inner: {},
 });
 
-async function getCluster(id: string) {
+async function getCluster(id: number) {
   await delay(0);
   return {
     data: {
       id,
       e: "cluster",
       host: {
-        id: "1",
+        id: 1,
         e: "host",
-        vm: { id: "1", e: "vm" },
-        vms: [{ id: "2", e: "vm2" }],
+        vm: { id: 1, e: "vm" },
+        vms: [{ id: 2, e: "vm2" }],
       },
       vms: [
-        { id: "1", e: "vm" },
-        { id: "2", e: "vm2" },
+        { id: 1, e: "vm" },
+        { id: 2, e: "vm2" },
       ],
       deep: {
         e: "deep",
-        host: { id: "2", e: "host2" },
+        host: { id: 2, e: "host2" },
         arr: [
-          { id: "1", e: "inner" },
-          { id: "2", e: "inner2" },
-          { id: "3", e: "inner3" },
+          { id: 1, e: "inner" },
+          { id: 2, e: "inner2" },
+          { id: 3, e: "inner3" },
         ],
       },
       very: {
         deep: {
-          host: { id: "1", e: "host" },
+          host: { id: 1, e: "host" },
           arr: [
-            { id: "3", e: "inner3" },
-            { id: "2", e: "inner2" },
-            { id: "1", e: "inner" },
+            { id: 3, e: "inner3" },
+            { id: 2, e: "inner2" },
+            { id: 1, e: "inner" },
           ],
         },
       },
@@ -102,7 +99,7 @@ async function getCluster(id: string) {
   };
 }
 
-async function getHost(id: string) {
+async function getHost(id: number) {
   await delay(200);
   return {
     data: {
@@ -110,24 +107,24 @@ async function getHost(id: string) {
       host: "host",
       e: "host_2",
       vm: {
-        id: "1",
+        id: 1,
         e: "vm_2",
         vm: "vm",
       },
-      vms: [{ id: "2", e: "vm2_2" }],
+      vms: [{ id: 2, e: "vm2_2" }],
       cluster: {
-        id: "1",
+        id: 1,
         e: "cluster_2",
         cluster: "cluster",
         vms: [
-          { id: "2", e: "vm2_2", vm: "vm" },
-          { id: "1", e: "vm_2", vm: "vm" },
+          { id: 2, e: "vm2_2", vm: "vm" },
+          { id: 1, e: "vm_2", vm: "vm" },
         ],
         deep: {
           e: "deep_2",
           arr: [
-            { id: "3", e: "inner3_2" },
-            { id: "1", e: "inner_2" },
+            { id: 3, e: "inner3_2" },
+            { id: 1, e: "inner_2" },
           ],
         },
         very: {
@@ -140,7 +137,7 @@ async function getHost(id: string) {
   };
 }
 
-async function getVm(id: string) {
+async function getVm(id: number) {
   await delay(400);
   return {
     data: {
@@ -151,7 +148,7 @@ async function getVm(id: string) {
   };
 }
 
-async function getInner(id: string) {
+async function getInner(id: number) {
   await delay(600);
   return {
     data: { id, e: "inner" },

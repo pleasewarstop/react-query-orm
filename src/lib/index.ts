@@ -26,7 +26,7 @@ export function reactQueryOrm<C extends Config, K extends keyof C = keyof C>(
       return {
         queryKey: qk,
         queryFn: () => queryFn(param),
-        placeholderData: x && config[key].toPlaceholder(x),
+        placeholderData: x && (config[key] as any).toPlaceholder?.(x),
       };
     };
   }
@@ -37,7 +37,7 @@ export function useReactQueryOrm(queryClient: any) {
   useEffect(() => listen(queryClient), [queryClient]);
 }
 
-// DeepPartial для x
+// DeepPartial for x
 export function one<
   One extends (a: any) => any,
   X extends (x: AwaitedReturn<One>) => any,
@@ -51,8 +51,7 @@ export function one<
 export function many<
   Many extends (...args: any[]) => any,
   List extends (res: AwaitedReturn<Many>) => any,
-  ToRes extends (list: ReturnType<List>, res: ReturnType<Many>) => any,
-  ToPlaceholder = (list: ReturnType<List>) => any
->(many: Many, list: List, toRes: ToRes, toPlaceholder: ToPlaceholder) {
-  return { many, list, toPlaceholder, toRes };
+  ToRes extends (list: ReturnType<List>, res: ReturnType<Many>) => any
+>(many: Many, list: List, toRes: ToRes) {
+  return { many, list, toRes };
 }
