@@ -1,6 +1,5 @@
 import { g } from "./g";
 import { getPath, hasPath, isSamePath, Path } from "./path";
-import { qkString } from "./qk";
 
 export function addRelation(parent: string, child: string, path: Path) {
   if (!hasPath(g.event.child[parent]?.[child] || [], path)) {
@@ -69,14 +68,9 @@ function isSameChildInPath(parent: string, path: Path) {
   const prevItem = getPath(g.cache[parent], path);
   const parentDeps = g.orm[parentQK[0]];
   const dep = Array.isArray(itemParent)
-    ? getPath(parentDeps, path.slice(0, -1))
+    ? getPath(parentDeps, path.slice(0, -1))[0]
     : getPath(parentDeps, path);
 
-  if (typeof dep === "function") {
-    const childQK = item && dep(item);
-    const prevChildQK = prevItem && dep(prevItem);
-    return qkString(childQK || []) === qkString(prevChildQK || []);
-  }
   const id = item && g.config[dep].id(item);
   const prevId = prevItem && g.config[dep].id(prevItem);
   return id === prevId;

@@ -8,7 +8,7 @@ export type OneOrMany<
   K extends AllKeys
 > = C[K] extends { one: (...args: any[]) => any; x: (arg: any) => any }
   ? PartialWithKeysReplacing<OneXResult<C[K]>, C>
-  : ManyFn<C, K>;
+  : OrmManyItem<C, K>;
 
 type FirstArg<F extends (...args: any) => any> = Parameters<F> extends []
   ? undefined
@@ -18,7 +18,7 @@ type IsOptionalArg<F extends (...args: any) => any> = Parameters<F> extends []
   ? true
   : false;
 
-export type QObj<C extends Config, K extends keyof C> = C[K] extends {
+export type QItem<C extends Config, K extends keyof C> = C[K] extends {
   one: infer OneFn extends (...args: any) => any;
 }
   ? IsOptionalArg<OneFn> extends true
@@ -80,19 +80,25 @@ type ListItem<T> = T extends { list: (arg: any) => any }
 
 type Child<T> = T extends (infer U)[] ? U : never;
 
-type ManyFn<C extends Config, K extends keyof C> = (
-  item: Child<ListItem<C[K]>>
-) => [keyof C, RecordKey];
+type OrmManyItem<C extends Config, K extends keyof C> = [
+  keyof C | OrmManyFn<C, K>
+];
 
-type ListMapper<C extends Config, T> = (arg: Child<T>) => [keyof C, RecordKey];
+type OrmManyFn<C extends Config, K extends keyof C> = (
+  item: Child<ListItem<C[K]>>
+) => keyof C;
+
+type OrmListItem<C extends Config, T> = [keyof C | OrmListFn<C, T>];
+
+type OrmListFn<C extends Config, T> = (arg: Child<T>) => keyof C;
 
 type ReplaceWithK<
   T,
   C extends Config,
   AllKeys extends keyof C = keyof C
 > = T extends object
-  ? AllKeys | ListMapper<C, T> | PartialWithKeysReplacing<T, C>
-  : AllKeys | ListMapper<C, T>;
+  ? AllKeys | OrmListItem<C, T> | PartialWithKeysReplacing<T, C>
+  : AllKeys | OrmListItem<C, T>;
 
 type PartialWithKeysReplacing<T, C extends Config> = {
   [K in keyof T]?: ReplaceWithK<T[K], C, K>;

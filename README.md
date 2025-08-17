@@ -1,6 +1,10 @@
+# react-query-orm
+
 generating `q` arguments for `useQuery(q.arg(param))` usage with convenient typed interface for synchronizing entity state between multiple useQuery hooks
 
-concept
+`npm i && npm start` for start test
+
+## concept
 
 1. Entity is the main abstraction of the library. It is unit defined by id or combination of fields, present in different `useQuery` hooks
 2. There are two hooks types: `one` for getting single entities and `many` for getting lists
@@ -8,9 +12,9 @@ concept
 4. New data received through a hook updates the same data in other hooks
 5. Partially obtained entities can be used as placeholders in `one` hooks to improve ux
 
-guide
+## guide
 
-1. Define entities in `config` using `one` and `many` functions
+1. Define entities and lists in `config` using `one` and `many` functions
 
 ```js
 import { one, many } from "./lib";
@@ -22,7 +26,7 @@ const config = {
     getCluster,
     // extracts entity from response
     (res) => res.data,
-    // injects instance to response
+    // create response from instance
     (x) => ({ data: x }),
     // extracts id from instance
     (x) => x.id
@@ -33,7 +37,7 @@ const config = {
     getClusters,
     // extracts entity from response
     (res) => res.data,
-    // injects instance to response
+    // create response from instance
     (list) => ({ data: list })
   ),
   host: one(
@@ -45,20 +49,19 @@ const config = {
 };
 ```
 
-2. Bind entities of `one` specified in `config` to another queries. Using reactQueryOrm we create an object q with argFn: functions that return an argument for useQuery
+2. Bind entities of `one` specified in `config` to another queries. Using reactQueryOrm we create an object `q` with argFn: functions that return an argument for useQuery
 
 ```js
 import { reactQueryOrm } from "./lib";
 
 export const { q } = reactQueryOrm(config, {
   cluster: {
-    // "host" field of cluster contains instance of host
-    // cluster type is taken from structure getCluster
+    // "host" field of cluster query contains instance of host
+    // cluster type is taken from getCluster structure
     host: "host",
   },
-  // iterating the list, we determine which entity the elements belong to
-  // and extract their id
-  clusters: (x) => ["cluster", x.id], // autocompletion is present
+  // in clusters query we get list of clusters
+  clusters: ["cluster"],
 });
 ```
 
@@ -89,6 +92,7 @@ cumulative updates affect 3 levels of nesting of relationships between entities
 
 todo:
 
+- funcs in orm as conditional entity choosing
 - tests upgrade
 - instances removing
 - useInfiniteQuery

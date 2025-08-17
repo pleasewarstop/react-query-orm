@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { g } from "./g";
 import { listen } from "./listen";
 import { qkArgString, qkString } from "./qk";
-import { AwaitedReturn, Config, OneOrMany, QObj } from "./t";
+import { AwaitedReturn, Config, OneOrMany, QItem } from "./type";
 
 export function reactQueryOrm<C extends Config, K extends keyof C = keyof C>(
   config: C,
@@ -13,7 +13,7 @@ export function reactQueryOrm<C extends Config, K extends keyof C = keyof C>(
   g.config = config;
   g.orm = orm;
   const q: {
-    [P in K]: QObj<C, P>;
+    [P in K]: QItem<C, P>;
   } = {} as any;
   for (let key in config) {
     const item = config[key];
@@ -37,12 +37,11 @@ export function useReactQueryOrm(queryClient: any) {
   useEffect(() => listen(queryClient), [queryClient]);
 }
 
-// DeepPartial for x
 export function one<
   One extends (a: any) => any,
   X extends (x: AwaitedReturn<One>) => any,
-  Id extends (x: ReturnType<X>) => any,
-  ToRes = (x: Partial<ReturnType<X>>) => any
+  ToRes extends (x: Partial<ReturnType<X>>) => any,
+  Id extends (x: ReturnType<X>) => any
 >(one: One, x: X, toRes: ToRes, id?: Id) {
   return { one, x, toRes, id: id || ((x: any) => x.id as Id) };
 }

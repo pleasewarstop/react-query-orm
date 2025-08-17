@@ -39,12 +39,12 @@ const config = {
 const { q } = reactQueryOrm(config, {
   cluster: {
     host: "host",
-    vms: (x) => ["vm", x.id],
+    vms: ["vm"],
   },
-  clusters: (x) => ["cluster", x.id],
+  clusters: ["cluster"],
   host: {
     vm: "vm",
-    vms: (x) => ["vm", x.id],
+    vms: ["vm"],
   },
   vm: {},
 });

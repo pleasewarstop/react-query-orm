@@ -35,21 +35,21 @@ const config = {
 const { q } = reactQueryOrm(config, {
   cluster: {
     host: "host",
-    vms: (x) => ["vm", x.id],
+    vms: ["vm"],
     deep: {
       host: "host",
-      arr: (x) => ["inner", x.id],
+      arr: ["inner"],
     },
     very: {
       deep: {
         host: "host",
-        arr: (x) => ["inner", x.id],
+        arr: ["inner"],
       },
     },
   },
   host: {
     vm: "vm",
-    vms: (x) => ["vm", x.id],
+    vms: ["vm"],
     cluster: "cluster",
   },
   vm: {},

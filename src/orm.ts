@@ -45,22 +45,22 @@ const config = {
 export const { q } = reactQueryOrm(config, {
   cluster: {
     host: "host",
-    vms: (x) => ["vm", x.id],
+    vms: ["vm"],
     deep: {
       host: "host",
-      arr: (x) => ["inner", x.id],
+      arr: ["inner"],
     },
     very: {
       deep: {
         host: "host",
-        arr: (x) => ["inner", x.id],
+        arr: ["inner"],
       },
     },
   },
   host: {
     cluster: "cluster",
     vm: "vm",
-    vms: (x) => ["vm", x.id],
+    vms: ["vm"],
     deep: {
       very: {
         inner: "inner",
@@ -71,5 +71,5 @@ export const { q } = reactQueryOrm(config, {
     cluster: "cluster",
     host: "host",
   },
-  clusters: (x) => ["cluster", x.id],
+  clusters: ["cluster"],
 });

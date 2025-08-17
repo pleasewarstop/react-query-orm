@@ -34,17 +34,18 @@ function setList(qk: any, list: any) {
 
   for (let i = 0; i < list.length; i++) {
     const x = list[i];
-    const itemQK = g.orm[qk[0]](x);
-    itemQK[1] = qkArgString(itemQK[1]);
-    const childSt = qkString(itemQK);
+    const childOrm = g.orm[qk[0]][0];
+    const id = x && g.config[childOrm].id(x);
+    const childQK = [childOrm, qkArgString(id)];
+    const childSt = qkString(childQK);
     addRelation(st, childSt, [i]);
-    setQK(itemQK, x);
+    setQK(childQK, x);
   }
 }
 
 function applyDeps(qk: any, deps: any, diff: any, path: any[] = []) {
   for (let key in deps) {
-    if (["string", "function"].includes(typeof deps[key])) {
+    if (["string"].includes(typeof deps[key]) || Array.isArray(deps[key])) {
       applyDep(qk, key, deps[key], diff, [...path, key]);
     } else {
       if (diff) applyDeps(qk, deps[key], diff[key], [...path, key]);
@@ -67,7 +68,7 @@ function applyDep(
     const childArgString = qkArgString(g.config[dep].id(diff));
     const childQK = [dep, childArgString];
     addChildDiff(qk, childQK, diff, path);
-  } else if (typeof dep === "function") {
+  } else if (Array.isArray(dep)) {
     addChildArrayDiffs(qk, diff, dep, path);
   }
 }
@@ -80,17 +81,18 @@ function addChildDiff(qk: any, childQK: any, childDiff: any, path: any[]) {
 }
 
 function addChildArrayDiffs(qk: any, childDiff: any, dep: any, path: any[]) {
+  const itemOrm = dep[0];
   for (let i = 0; i < childDiff.length; i++) {
-    const itemQK = dep(childDiff[i]);
-    itemQK[1] = qkArgString(itemQK[1]);
+    const id = g.config[itemOrm].id(childDiff[i]);
+    const itemQK = [itemOrm, qkArgString(id)];
     addChildDiff(qk, itemQK, childDiff[i], [...path, i]);
   }
   const st = qkString(qk);
   const prev = getPath(g.cache[st], path);
   if ((prev?.length || 0) > childDiff.length) {
     for (let i = childDiff.length; i < prev.length; i++) {
-      const childQK = dep(prev[i]);
-      childQK[1] = qkArgString(childQK[1]);
+      const id = g.config[itemOrm].id(prev[i]);
+      const childQK = [itemOrm, qkArgString(id)];
       removeRelation(st, qkString(childQK), [...path, i]);
     }
   }
