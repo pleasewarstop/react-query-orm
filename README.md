@@ -29,7 +29,7 @@ const config = {
     // create response from instance
     (x) => ({ data: x }),
     // extracts id from instance
-    (x) => x.id
+    (x) => x.id,
   ),
   // many - for hook of clusters receiving
   clusters: many(
@@ -38,12 +38,12 @@ const config = {
     // extracts entity from response
     (res) => res.data,
     // create response from instance
-    (list) => ({ data: list })
+    (list) => ({ data: list }),
   ),
   host: one(
     getHost,
     (res) => res.data,
-    (x) => ({ data: x })
+    (x) => ({ data: x }),
     // you can miss id function if id field is "id"
   ),
 };
@@ -88,11 +88,11 @@ function Component() {
 }
 ```
 
-cumulative updates affect 3 levels of nesting of relationships between entities
-
 todo:
 
 - funcs in orm as conditional entity choosing
+- placeholders types
+- put from updates existed fields only
 - tests upgrade
 - instances removing
 - useInfiniteQuery
