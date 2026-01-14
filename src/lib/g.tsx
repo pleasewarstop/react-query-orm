@@ -1,9 +1,11 @@
 export const g = {
   config: {},
   orm: {},
-  cache: {},
+  queryClient: null,
   parents: {},
   childs: {},
+  queries: {},
+  dataUpdatedAt: {},
   stQK: {},
   event: {
     diff: {},

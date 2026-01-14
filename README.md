@@ -1,6 +1,10 @@
-# react-query-orm
+# Conclusion after the research
 
-generating `q` arguments for `useQuery(q.arg(param))` usage with convenient typed interface for synchronizing entity state between multiple useQuery hooks
+Because in some cases a nested structure must be fully replaced, while in other cases it is logically correct to update only the changed fields, it is not possible to implement a universal type-safe merge strategy. An ORM with such an interface can lead to incorrect updates and subtle bugs. From an architectural perspective, writing each update explicitly is a more correct and reliable approach.
+
+## goals
+
+Generating `q` arguments for `useQuery(q.arg(param))` usage with convenient typed interface for synchronizing entity state between multiple useQuery hooks
 
 `npm i && npm start` for start test
 
@@ -29,7 +33,7 @@ const config = {
     // create response from instance
     (x) => ({ data: x }),
     // extracts id from instance
-    (x) => x.id,
+    (x) => x.id
   ),
   // many - for hook of clusters receiving
   clusters: many(
@@ -38,12 +42,12 @@ const config = {
     // extracts entity from response
     (res) => res.data,
     // create response from instance
-    (list) => ({ data: list }),
+    (list) => ({ data: list })
   ),
   host: one(
     getHost,
     (res) => res.data,
-    (x) => ({ data: x }),
+    (x) => ({ data: x })
     // you can miss id function if id field is "id"
   ),
 };
@@ -87,13 +91,3 @@ function Component() {
   });
 }
 ```
-
-todo:
-
-- funcs in orm as conditional entity choosing
-- placeholders types
-- put from updates existed fields only
-- tests upgrade
-- instances removing
-- useInfiniteQuery
-- ?DeepPartial for x

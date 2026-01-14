@@ -1,3 +1,4 @@
+import { queryClient } from ".";
 import {
   getCluster,
   getClusters,
@@ -24,52 +25,54 @@ const config = {
     (res) => res.data,
     (data) => ({ data })
   ),
-  localStorages: many(
-    getLocalStorages,
-    (res) => res.data,
-    (list) => ({ data: list })
-  ),
+  // localStorages: many(
+  //   getLocalStorages,
+  //   (res) => res.data,
+  //   (list) => ({ data: list })
+  // ),
   vm: one(
     getVm,
     (res) => res.data,
     (data) => ({ data })
   ),
-  inner: one(
-    getInner,
-    (res) => res,
-    (x) => x
-  ),
+  // inner: one(
+  //   getInner,
+  //   (res) => res,
+  //   (x) => x
+  // ),
 };
 
 // create orm object directly in reactQueryOrm arguments to access autocompletion of ts
 export const { q } = reactQueryOrm(config, {
   cluster: {
     host: "host",
-    vms: ["vm"],
-    deep: {
-      host: "host",
-      arr: ["inner"],
-    },
-    very: {
-      deep: {
-        host: "host",
-        arr: ["inner"],
-      },
-    },
+    // vms: ["vm"],
+    // deep: {
+    //   host: "host",
+    //   arr: ["inner"],
+    // },
+    // very: {
+    //   deep: {
+    //     host: "host",
+    //     arr: ["inner"],
+    //   },
+    // },
   },
   host: {
-    cluster: "cluster",
     vm: "vm",
-    vms: ["vm"],
-    deep: {
-      very: {
-        inner: "inner",
-      },
-    },
+    // vms: ["vm"],
+    // deep: {
+    //   very: {
+    //     inner: "inner",
+    //   },
+    // },
   },
   vm: {
     cluster: "cluster",
-    host: "host",
   },
+  // vm: {
+  //   cluster: "cluster",
+  //   host: "host",
+  // },
   clusters: ["cluster"],
 });
