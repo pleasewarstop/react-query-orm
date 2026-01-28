@@ -1,9 +1,8 @@
 import { useEffect } from "react";
-import { g } from "./g";
-import { listen } from "./listen";
-import { qkArgString, qkString } from "./qk";
-import { AwaitedReturn, Config, OrmItem, QItem } from "./type";
-import { getPath } from "./path";
+import { g } from "./lib/g";
+import { listen } from "./lib/listen";
+import { qkArgString } from "./lib/qk";
+import { AwaitedReturn, Config, OrmItem, QItem } from "./typeNew";
 
 export function reactQueryOrm<C extends Config, K extends keyof C = keyof C>(
   config: C,
@@ -26,38 +25,10 @@ export function reactQueryOrm<C extends Config, K extends keyof C = keyof C>(
       return {
         queryKey: qk,
         queryFn: () => queryFn(param),
-        placeholderData: isOne ? getOnePlaceholder(qk) : undefined,
       };
     };
   }
   return { q };
-}
-
-function getOnePlaceholder(qk: string[]) {
-  if (!g.queryClient) return undefined;
-  const oneCache = g.queryClient.getQueryData(qk);
-  if (oneCache) return oneCache;
-  const placeholder = {} as any;
-  const parents = g.parents[qkString(qk)] || [];
-  // двойная вложенность, topFieldsParent вместо всех полей
-  for (let parent in parents) {
-    const parentQK = g.stQK[parent];
-    const parentCache = g.queryClient.getQueryData(parentQK);
-    if (!parentCache) {
-      // подставляем данные из родителей родителя рекурсивно
-      continue;
-    }
-    const parentItem = (g.config[parentQK[0]].x || g.config[parentQK[0]].list)(
-      parentCache,
-    );
-    for (let path of parents[parent]) {
-      const item = getPath(parentItem, path);
-      for (let key in item) {
-        placeholder[key] = item[key];
-      }
-    }
-  }
-  return (g.config[qk[0]] as any).toRes?.(placeholder);
 }
 
 export function useReactQueryOrm(queryClient: any) {

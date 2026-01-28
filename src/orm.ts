@@ -9,21 +9,17 @@ import {
 } from "./api";
 import { one, many, reactQueryOrm } from "./lib";
 
-const config = {
-  cluster: one(
-    getCluster,
-    (res) => res.data,
-    (data) => ({ data })
-  ),
+const c = {
+  cluster: one(getCluster),
   clusters: many(
     getClusters,
     (res) => res.data,
-    (list) => ({ data: list })
+    (list) => ({ data: list }),
   ),
   host: one(
     getHost,
     (res) => res.data,
-    (data) => ({ data })
+    (data) => ({ data }),
   ),
   // localStorages: many(
   //   getLocalStorages,
@@ -33,7 +29,7 @@ const config = {
   vm: one(
     getVm,
     (res) => res.data,
-    (data) => ({ data })
+    (data) => ({ data }),
   ),
   // inner: one(
   //   getInner,
@@ -42,37 +38,42 @@ const config = {
   // ),
 };
 
-// create orm object directly in reactQueryOrm arguments to access autocompletion of ts
-export const { q } = reactQueryOrm(config, {
-  cluster: {
-    host: "host",
-    // vms: ["vm"],
-    // deep: {
-    //   host: "host",
-    //   arr: ["inner"],
-    // },
-    // very: {
-    //   deep: {
-    //     host: "host",
-    //     arr: ["inner"],
-    //   },
-    // },
-  },
-  host: {
-    vm: "vm",
-    // vms: ["vm"],
-    // deep: {
-    //   very: {
-    //     inner: "inner",
-    //   },
-    // },
-  },
-  vm: {
-    cluster: "cluster",
-  },
-  // vm: {
-  //   cluster: "cluster",
-  //   host: "host",
-  // },
-  clusters: ["cluster"],
+const clusterA = inner(
+  c.cluster,
+  (x) => x.a,
+  (xA) => xA.a,
+);
+
+const clusterEOr = or(c.cluster, (x) => x.e, {
+  clusterEA: [(e) => "a" in e, clusterA],
+  clusterHost: [(e) => "vm" in e, c.host],
 });
+
+export const { q } = reactQueryOrm(c, {
+  cluster: {
+    host: "host", //c.host,
+    // a: clusterA.with({
+    //   host: c.host
+    // }),
+    // e: clusterEOr
+  },
+  // host: {
+  // vm: "vm",
+  // vms: ["vm"],
+  // deep: {
+  //   very: {
+  //     inner: "inner",
+  //   },
+  // },
+  // },
+  // clusters: [
+  // проверяем добавленный тип чтоб было поле oki и т.д.
+  // c.cluster.with({
+  //   oki: clusterA
+  // }),
+  // ],
+});
+
+// pick, omit, add, replace
+// слушать merge можно только для one или inner
+merge(c.cluster, ([prev, to], next) => {});

@@ -90,10 +90,22 @@ type OrmListItem<C extends Config, T> = [keyof C | OrmListFn<C, T>];
 
 type OrmListFn<C extends Config, T> = (arg: Child<T>) => keyof C;
 
-type ReplaceWithKey<T, C extends Config> = T extends object
-  ? keyof C | OrmListItem<C, T> | PartialWithKeysReplacing<T, C>
-  : keyof C | OrmListItem<C, T>;
+export class Deep<P, T> {
+  parent: P;
+  childs: T;
+  constructor(parent: P, childs: T) {
+    this.parent = parent;
+    this.childs = childs;
+  }
+}
 
-type PartialWithKeysReplacing<T, C extends Config> = {
+type ReplaceWithKey<T, C extends Config> =
+  T extends Deep<any, any>
+    ? Deep<keyof C, T>
+    : T extends object
+      ? keyof C | OrmListItem<C, T> | PartialWithKeysReplacing<T, C>
+      : keyof C | OrmListItem<C, T>;
+
+export type PartialWithKeysReplacing<T, C extends Config> = {
   [K in keyof T]?: ReplaceWithKey<T[K], C>;
 };
