@@ -1,9 +1,5 @@
-1. Типизация merge-функции (чтобы в prev/to попадали типы которые есть в ключах)
-2. Запретить примитивы в orm
-
-# Conclusion after the research
-
-Because in some cases a nested structure must be fully replaced, while in other cases it is logically correct to update only the changed fields, it is not possible to implement a universal type-safe merge strategy. An ORM with such an interface can lead to incorrect updates and subtle bugs. From an architectural perspective, writing each update explicitly is a more correct and reliable approach.
+видимо орм требует разбития юнион-типов из апи на сущность { [kind]: union => string, data: KindOrm }
+для корректного типа в extract
 
 ## goals
 

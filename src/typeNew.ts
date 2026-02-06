@@ -1,14 +1,22 @@
 import type { QueryFunctionContext } from "@tanstack/react-query";
 
-export type Config = Record<RecordKey, ConfigItem>;
+export type Config = Record<
+  string,
+  | {
+      one: (...args: any[]) => any;
+      x: (arg: any) => any;
+      toRes: (x: any) => any;
+    }
+  | { many: (...args: any[]) => any }
+>;
 
 export type OrmItem<
   C extends Config,
   AllKeys extends keyof C,
   K extends AllKeys,
 > = C[K] extends { one: (...args: any[]) => any; x: (arg: any) => any }
-  ? PartialWithKeysReplacing<OneXResult<C[K]>, C>
-  : OrmManyItem<C, K>;
+  ? OrmNode<C, X<C[K]>>
+  : any; //OrmManyItem<C, K>;
 
 type FirstArg<F extends (...args: any) => any> =
   Parameters<F> extends [] ? undefined : Parameters<F>[0];
@@ -58,54 +66,40 @@ export type AwaitedReturn<T> = T extends (...args: any[]) => Promise<infer R>
     ? R
     : never;
 
-type RecordKey = string | number | symbol;
-
-type ConfigItem =
-  | {
-      one: (...args: any[]) => any;
-      x: (arg: any) => any;
-      toRes: (x: any) => any;
-    }
-  | { many: (...args: any[]) => any };
-
-export type OneXResult<T> = T extends { x: (arg: any) => any }
+export type X<T> = T extends { x: (arg: any) => any }
   ? ReturnType<T["x"]>
   : never;
 
-type ListItem<T> = T extends { list: (arg: any) => any }
-  ? ReturnType<T["list"]>
-  : never;
-
 type Child<T> = T extends (infer U)[] ? U : never;
-
-type OrmManyItem<C extends Config, K extends keyof C> = [
-  keyof C | OrmManyFn<C, K>,
-];
-
-type OrmManyFn<C extends Config, K extends keyof C> = (
-  item: Child<ListItem<C[K]>>,
-) => keyof C;
 
 type OrmListItem<C extends Config, T> = [keyof C | OrmListFn<C, T>];
 
 type OrmListFn<C extends Config, T> = (arg: Child<T>) => keyof C;
 
-export class Deep<P, T> {
-  parent: P;
-  childs: T;
-  constructor(parent: P, childs: T) {
-    this.parent = parent;
-    this.childs = childs;
-  }
+export function createDeep<C extends Config>() {
+  return function <T, P extends keyof C = keyof C>(
+    parent: P,
+    childs: OrmNode<C, T>,
+  ): DeepNode<C, T> {
+    return { parent, childs, __orm_deep_node: true };
+  };
 }
 
-type ReplaceWithKey<T, C extends Config> =
-  T extends Deep<any, any>
-    ? Deep<keyof C, T>
-    : T extends object
-      ? keyof C | OrmListItem<C, T> | PartialWithKeysReplacing<T, C>
-      : keyof C | OrmListItem<C, T>;
+export type UnionFn<C extends Config, T> = (item: T) => OrmNode<C, T>;
 
-export type PartialWithKeysReplacing<T, C extends Config> = {
-  [K in keyof T]?: ReplaceWithKey<T[K], C>;
+export type DeepNode<C extends Config, T> = {
+  parent: keyof C;
+  childs: OrmNode<C, T>;
+  __orm_deep_node: true;
+};
+
+export type OrmNode<C extends Config, T> =
+  | keyof C
+  | UnionFn<C, T>
+  | DeepNode<C, T>
+  | OrmListItem<C, T>
+  | (T extends object ? PartialNode<C, T> : never);
+
+export type PartialNode<C extends Config, T> = {
+  [K in keyof T]?: OrmNode<C, T[K]>;
 };
