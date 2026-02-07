@@ -79,7 +79,7 @@ type OrmListFn<C extends Config, T> = (arg: Child<T>) => keyof C;
 export function createDeep<C extends Config>() {
   return function <T, P extends keyof C = keyof C>(
     parent: P,
-    childs: OrmNode<C, T>,
+    childs?: OrmNode<C, T>,
   ): DeepNode<C, T> {
     return { parent, childs, __orm_deep_node: true };
   };
@@ -89,7 +89,7 @@ export type UnionFn<C extends Config, T> = (item: T) => OrmNode<C, T>;
 
 export type DeepNode<C extends Config, T> = {
   parent: keyof C;
-  childs: OrmNode<C, T>;
+  childs?: OrmNode<C, T>;
   __orm_deep_node: true;
 };
 
