@@ -76,27 +76,32 @@ type OrmListItem<C extends Config, T> = [keyof C | OrmListFn<C, T>];
 
 type OrmListFn<C extends Config, T> = (arg: Child<T>) => keyof C;
 
-export function createDeep<C extends Config>() {
-  return function <T, P extends keyof C = keyof C>(
-    parent: P,
-    childs?: OrmNode<C, T>,
-  ): DeepNode<C, T> {
-    return { parent, childs, __orm_deep_node: true };
-  };
+export function deep<P extends string, Ch>(
+  parent: P,
+  childs: Ch,
+): { parent: P; childs: Ch; __orm_deep_node: true } {
+  return { parent, childs, __orm_deep_node: true };
 }
 
 export type UnionFn<C extends Config, T> = (item: T) => OrmNode<C, T>;
 
-export type DeepNode<C extends Config, T> = {
-  parent: keyof C;
-  childs?: OrmNode<C, T>;
+type DeepChilds<C extends Config, T> = PartialNode<C, T> | null;
+
+export type DeepNode<
+  C extends Config,
+  T,
+  P extends keyof C,
+  Ch extends DeepChilds<C, T> = DeepChilds<C, T>,
+> = {
+  parent: P;
+  childs: Ch;
   __orm_deep_node: true;
 };
 
 export type OrmNode<C extends Config, T> =
   | keyof C
   | UnionFn<C, T>
-  | DeepNode<C, T>
+  | DeepNode<C, T, keyof C, PartialNode<C, T>>
   | OrmListItem<C, T>
   | (T extends object ? PartialNode<C, T> : never);
 

@@ -1,5 +1,5 @@
 import { one, reactQueryOrm } from "./libNew";
-import { createDeep, X } from "./typeNew";
+import { deep } from "./typeNew";
 
 const c = {
   cluster: one(
@@ -23,18 +23,10 @@ const c = {
     (data) => ({ data }),
   ),
 };
-// что делать с || полями в полном кластере?
-type Cluster = X<typeof c.cluster>;
-
-// нужна полная сущность, в которой есть все поля
-// function deep<P, C>(parent: P, child: C) {
-//   return new Deep(parent, child);
-// }
-const deep = createDeep<typeof c>();
 
 export const { q } = reactQueryOrm(c, {
   cluster: {
-    host: deep<Cluster["host"]>("host", {
+    host: deep("host", {
       oki: "oki",
     }),
     inner: {
