@@ -76,18 +76,36 @@ type OrmListItem<C extends Config, T> = [keyof C | OrmListFn<C, T>];
 
 type OrmListFn<C extends Config, T> = (arg: Child<T>) => keyof C;
 
-export function deep<P extends string, Ch>(
+export function deep<P extends string, Ch extends object>(
   parent: P,
   childs: Ch,
 ): { parent: P; childs: Ch; __orm_deep_node: true } {
   return { parent, childs, __orm_deep_node: true };
 }
 
-export type UnionFn<C extends Config, T> = (item: T) => OrmNode<C, T>;
+export function pick<O, I>(
+  orm: O,
+  typedItem: (IsUnion<I> extends true
+    ? { ERROR: "Type must not be union" }
+    : unknown) &
+    I,
+): [O, I] {
+  return [orm, typedItem];
+}
 
-type DeepChilds<C extends Config, T> = PartialNode<C, T> | null;
+type IsUnion<T, U extends T = T> = (
+  T extends any ? (U extends T ? false : true) : never
+) extends false
+  ? false
+  : true;
 
-export type DeepNode<
+type UnionFn<C extends Config, T, R extends T = T> = (
+  item: T,
+) => [OrmNode<C, R>, R];
+
+type DeepChilds<C extends Config, T> = PartialNode<C, T>;
+
+type DeepNode<
   C extends Config,
   T,
   P extends keyof C,
@@ -98,13 +116,13 @@ export type DeepNode<
   __orm_deep_node: true;
 };
 
-export type OrmNode<C extends Config, T> =
+type OrmNode<C extends Config, T> =
   | keyof C
   | UnionFn<C, T>
   | DeepNode<C, T, keyof C, PartialNode<C, T>>
   | OrmListItem<C, T>
   | (T extends object ? PartialNode<C, T> : never);
 
-export type PartialNode<C extends Config, T> = {
+type PartialNode<C extends Config, T> = {
   [K in keyof T]?: OrmNode<C, T[K]>;
 };

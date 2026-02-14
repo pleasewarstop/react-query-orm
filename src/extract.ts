@@ -1,10 +1,14 @@
-import { Config, OrmItem, deep } from "./typeNew";
+import { Config, OrmItem, deep, pick } from "./typeNew";
 
 interface Queries {
   cluster: {
     id: string;
-    e:
-      | { id: string; fromE: true }
+    ec:
+      | {
+          id: string;
+          fromE: true;
+          c: { id: string; clusterDeepFromFn: true };
+        }
       | {
           deep:
             | { deep: { id: string; fromDeepDeep: true } }
@@ -13,13 +17,16 @@ interface Queries {
   };
   host: {
     id: string;
-    e: {
+    eh: {
       id: string;
       fromHost: true;
-      hostDeep: {
+      j: { id: string; clusterDeepRecursive: true };
+      hostDeepCluster: {
         id: string;
+        ec: { id: string; fromInnerCluster: true };
       };
     };
+    j: { id: string; clusterShallow: true };
   };
 }
 
@@ -38,17 +45,27 @@ type Conf = {
 
 const orm = createOrm<Conf>()({
   cluster: {
-    e: (item) =>
+    ec: (item) =>
       "fromE" in item
-        ? "host"
-        : {
-            deep: (item) => ("deep" in item ? { deep: "host" } : "host"),
-          },
+        ? pick(
+            deep("host", {
+              c: "cluster",
+            }),
+            item,
+          )
+        : pick(
+            {
+              deep: (item) =>
+                "deep" in item
+                  ? pick({ deep: "host" }, item)
+                  : pick("host", item),
+            },
+            item,
+          ),
   },
   host: {
-    e: deep("host", {
-      hostDeep: "cluster",
-    }),
+    eh: "host",
+    j: "cluster",
   },
 });
 
@@ -60,9 +77,7 @@ function createOrm<C extends Config>() {
 
 const extract = createExtract<Queries, typeof orm>();
 
-extract("host", (from, [to, toKey]) => {
-  if ("deep" in to) throw new Error("never");
-
+extract("host", ([to, toKey], host) => {
   return protect<typeof to>(() => {
     if (toKey === "host") {
       return to;
@@ -73,15 +88,14 @@ extract("host", (from, [to, toKey]) => {
   });
 });
 
-extract("cluster", (from, [to, toKey]) => {
-  if ("deep" in to) throw new Error("never");
-  return to;
+extract("cluster", ([to, toKey], cluster) => {
+  return protect<typeof to>(() => to);
 });
 
 const protect = <T>(cb: () => T | void) => cb();
 
 function createExtract<Q, O>() {
-  type Keys = keyof Q & string;
+  type Keys = keyof Q & keyof O & string;
 
   type EntityPair<K extends Keys> = EntityPairs<Q, O, K>;
 
@@ -101,34 +115,32 @@ type Orm<C extends Config> = {
   [K in keyof C]: OrmItem<C, keyof C, K>;
 };
 
-type ExtractEntity<O, C, K extends string, Acc = never> = O extends K
-  ? Acc | C
+type ExtractEntity<ORM, O, C, K extends keyof ORM, Acc = never> = O extends K
+  ? ExtractEntity<ORM, ORM[O], C, K, Acc | C>
   : O extends {
         __orm_deep_node: true;
         parent: infer P;
         childs: infer Ch;
       }
-    ? Ch extends null
-      ? P extends K
-        ? Acc | C
-        : Acc
-      : P extends K
-        ? ExtractEntity<Ch, C, K, Acc | C>
-        : ExtractEntity<Ch, C, K, Acc>
+    ?
+        | ExtractEntity<ORM, Ch, C, K, Acc>
+        | (P extends K ? C : never)
+        | (P extends keyof ORM ? ExtractEntity<ORM, ORM[P], C, K, Acc> : never)
     : O extends (...args: any[]) => infer R
-      ? ExtractEntity<R, C, K, Acc>
+      ? R extends [infer RO, infer RC]
+        ? ExtractEntity<ORM, RO, RC, K, Acc>
+        : never
       : O extends object
         ?
             | {
-                [OK in keyof O]: ExtractEntity<
-                  O[OK],
-                  PickIfHasKey<C, OK>,
-                  K,
-                  Acc
-                >;
+                [OK in keyof O]: PickIfHasKey<C, OK> extends never
+                  ? never
+                  : ExtractEntity<ORM, O[OK], PickIfHasKey<C, OK>, K, Acc>;
               }[keyof O]
             | Acc
-        : Acc;
+        : O extends keyof ORM
+          ? ExtractEntity<ORM, ORM[O], C, K, Acc>
+          : Acc;
 
 type PickIfHasKey<U, K extends PropertyKey> = U extends any
   ? K extends keyof U
@@ -136,12 +148,12 @@ type PickIfHasKey<U, K extends PropertyKey> = U extends any
     : never
   : never;
 
-export type OKEntityPair<Q, O, K extends string, OK extends keyof O> = [
-  ExtractEntity<O[OK], OK extends keyof Q ? Q[OK] : never, K>,
+type OKEntityPair<Q, O, K extends keyof O, OK extends keyof O> = [
+  ExtractEntity<O, O[OK], OK extends keyof Q ? Q[OK] : never, K>,
   OK,
 ];
 
-type EntityPairs<Q, O, K extends string> =
+type EntityPairs<Q, O, K extends keyof O> =
   | {
       [OK in keyof O]: OKEntityPair<Q, O, K, OK>;
     }[keyof O]
