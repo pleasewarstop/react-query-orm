@@ -76,17 +76,17 @@ type OrmListItem<C extends Config, T> = [keyof C | OrmListFn<C, T>];
 
 type OrmListFn<C extends Config, T> = (arg: Child<T>) => keyof C;
 
-export function deep<P extends string, Ch extends object>(
+export function inst<P extends string, Ch extends object>(
   parent: P,
   childs: Ch,
-): { parent: P; childs: Ch; __orm_deep_node: true } {
-  return { parent, childs, __orm_deep_node: true };
+): { parent: P; childs: Ch; __orm_inst_node: true } {
+  return { parent, childs, __orm_inst_node: true };
 }
 
-export function pick<O, I>(
+export function take<O, I>(
   orm: O,
   typedItem: (IsUnion<I> extends true
-    ? { ERROR: "Type must not be union" }
+    ? { __err: "Type must not be union" }
     : unknown) &
     I,
 ): [O, I] {
@@ -113,7 +113,7 @@ type DeepNode<
 > = {
   parent: P;
   childs: Ch;
-  __orm_deep_node: true;
+  __orm_inst_node: true;
 };
 
 type OrmNode<C extends Config, T> =

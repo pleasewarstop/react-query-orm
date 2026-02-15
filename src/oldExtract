@@ -1,0 +1,166 @@
+import { Config, OrmItem, deep, take } from "./typeNew";
+
+interface Queries {
+  cluster: {
+    id: string;
+    ec:
+      | {
+          id: string;
+          fromE: true;
+          c: { id: string; clusterDeepFromFn: true };
+        }
+      | {
+          deep:
+            | { deep: { id: string; fromDeepDeep: true } }
+            | { id: string; fromDeep: true };
+        };
+  };
+  host: {
+    id: string;
+    eh: {
+      id: string;
+      fromHost: true;
+      j: { id: string; clusterDeepRecursive: true };
+      hostDeepCluster: {
+        id: string;
+        ec:
+          | { id: string; fromInnerCluster: true }
+          | {
+              deep:
+                | { id: string; fromDeepDeepp: true }
+                | { id: string; fromDeepp: true };
+            };
+      };
+    };
+    j: { id: string; clusterShallow: true };
+  };
+}
+
+type Conf = {
+  cluster: {
+    one: () => Promise<Queries["cluster"]>;
+    x: () => Queries["cluster"];
+    toRes: (x: any) => any;
+  };
+  host: {
+    one: () => Promise<Queries["host"]>;
+    x: () => Queries["host"];
+    toRes: (x: any) => any;
+  };
+};
+
+const orm = createOrm<Conf>()({
+  cluster: {
+    ec: (item) =>
+      "fromE" in item
+        ? take(
+            deep("host", {
+              c: "cluster",
+            }),
+            item,
+          )
+        : take(
+            {
+              deep: (item) =>
+                "deep" in item
+                  ? take({ deep: "host" }, item)
+                  : take("host", item),
+            },
+            item,
+          ),
+  },
+  host: {
+    eh: deep("host", {
+      hostDeepCluster: "cluster",
+    }),
+    j: "cluster",
+  },
+});
+
+function createOrm<C extends Config>() {
+  return function <T extends Orm<C> = Orm<C>>(orm: T): T {
+    return orm;
+  };
+}
+
+const extract = createExtract<Queries, typeof orm>();
+
+extract("host", ([to, toKey], host) => {
+  return protect<typeof to>(() => {
+    if (toKey === "host") {
+      return to;
+    }
+    if (toKey === "cluster") {
+      return to;
+    }
+  });
+});
+
+extract("cluster", ([to, toKey], cluster) => {
+  return protect<typeof to>(() => to);
+});
+
+const protect = <T,>(cb: () => T | void) => cb();
+
+function createExtract<Q, O>() {
+  type Keys = keyof Q & keyof O & string;
+
+  type EntityPair<K extends Keys> = EntityPairs<Q, O, K>;
+
+  type CB<K extends Keys> = (
+    from: EntityPair<K>,
+    to: EntityPair<K>,
+  ) => void | EntityPair<K>[0];
+
+  function extract<K extends Keys>(key: K, cb: CB<K>): void {
+    // runtime-реализация не важна
+  }
+
+  return extract;
+}
+
+type Orm<C extends Config> = {
+  [K in keyof C]: OrmItem<C, keyof C, K>;
+};
+
+type ExtractEntity<ORM, O, C, K extends keyof ORM, Acc = never> = O extends K
+  ? ExtractEntity<ORM, ORM[O], C, K, Acc | C>
+  : O extends {
+        __orm_inst_node: true;
+        parent: infer P;
+        childs: infer Ch;
+      }
+    ?
+        | ExtractEntity<ORM, Ch, C, K, Acc>
+        | (P extends K ? C : never)
+        | (P extends keyof ORM ? ExtractEntity<ORM, ORM[P], C, K, Acc> : never)
+    : O extends (...args: any[]) => infer R
+      ? R extends [infer RO, infer RC]
+        ? ExtractEntity<ORM, RO, RC, K, Acc>
+        : never
+      : O extends object
+        ?
+            | {
+                [OK in keyof O]: PickIfHasKey<C, OK> extends never
+                  ? never
+                  : ExtractEntity<ORM, O[OK], PickIfHasKey<C, OK>, K, Acc>;
+              }[keyof O]
+            | Acc
+        : O extends keyof ORM
+          ? ExtractEntity<ORM, ORM[O], C, K, Acc>
+          : Acc;
+
+type PickIfHasKey<U, K extends PropertyKey> = U extends any
+  ? K extends keyof U
+    ? U[K]
+    : never
+  : never;
+
+type EntityPairs<Q, O, K extends keyof O> =
+  | {
+      [OK in keyof O]: [
+        ExtractEntity<O, O[OK], OK extends keyof Q ? Q[OK] : never, K>,
+        OK,
+      ];
+    }[keyof O]
+  | [K extends keyof Q ? Q[K] : never, K];
